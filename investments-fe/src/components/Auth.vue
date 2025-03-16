@@ -112,22 +112,21 @@
             const refresh = response.data.refresh;
             localStorage.setItem("access", access);
             localStorage.setItem("refresh", refresh);
-            localStorage.setItem("isAuthenticated", "true"); // Store as a string
+            localStorage.setItem("isAuthenticated", "true"); 
 
             localStorage.setItem("log_user", JSON.stringify(this.credentials.username));
 
             apiService.getUser()
                 .then((response) => {
-                    console.log("User API Response:", response.data); // Debugging
+                    console.log("User API Response:", response.data); 
                     if (response.data) {
-                        localStorage.setItem("is_superuser", JSON.stringify(response.data.is_superuser)); // Store as boolean
-                        localStorage.setItem("userID", String(response.data.pk)); // Store as string
+                        localStorage.setItem("is_superuser", JSON.stringify(response.data.is_superuser)); 
+                        localStorage.setItem("userID", String(response.data.pk));
                         localStorage.setItem("validUserName", response.data.username);
                     } else {
                         console.error("Error: API did not return user data.");
                     }
 
-                    // Force a full page reload only after localStorage is updated
                     setTimeout(() => {
                         window.location = "/";
                     }, 500);
