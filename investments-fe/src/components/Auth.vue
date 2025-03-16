@@ -102,55 +102,56 @@
       showPassword: false,
     }),
     methods: {
-      login(){
-            localStorage.clear();
-            localStorage.setItem("isAuthenticated", false)
-  
-            apiService
-            .authenticateLogin(this.credentials)
-            .then((response) => {
-                const access = response.data.access
-                const refresh = response.data.refresh
-                localStorage.setItem("access", access)
-                localStorage.setItem("refresh",refresh)
-                localStorage.setItem("isAuthenticated", true)
-                localStorage.setItem("log_user", JSON.stringify(this.credentials.username))
-                apiService.getUser()
-              .then((response) => {
-                  this.user = response.data;
-                  localStorage.setItem("is_superuser", this.user.is_superuser)
-                  localStorage.setItem("userID", Number(this.user.pk))
-                  localStorage.setItem("validUserName", this.user.username)
-                }).catch(error => {
-                if (error.message ==="Network Error"){ // Verify CORS middleware installed in server settings
-                  this.showMsg = "axiosError"
-                }else if (error.response.status === 401) { // "not authorized"
-                    this.showMsg = "loginError";
-                    router.push("/auth");
-                  }else if (error.response.status === 400) { //"bad request"
-                    this.showMsg = "loginError";
-                  }else{
-                    this.showMsg = "axiosError";
-                    router.push("/auth");
-                  }
-              })
+      login() {
+    localStorage.clear();
+    localStorage.setItem("isAuthenticated", false);
 
-                window.location = "/";
-          }).catch(error => {
-          if (error.message ==="Network Error"){ // Verify CORS middleware installed in server settings
-            this.showMsg = "axiosError"
-          }else if (error.response.status === 401) { // "not authorized"
-              this.showMsg = "loginError";
-              router.push("/auth");
-            }else if (error.response.status === 400) { //"bad request"
-              this.showMsg = "loginError";
-            }else{
-              this.showMsg = "axiosError";
-              router.push("/auth");
+    apiService.authenticateLogin(this.credentials)
+        .then((response) => {
+            const access = response.data.access;
+            const refresh = response.data.refresh;
+            localStorage.setItem("access", access);
+            localStorage.setItem("refresh", refresh);
+            localStorage.setItem("isAuthenticated", "true"); // Store as a string
+
+            localStorage.setItem("log_user", JSON.stringify(this.credentials.username));
+
+            apiService.getUser()
+                .then((response) => {
+                    console.log("User API Response:", response.data); // Debugging
+                    if (response.data) {
+                        localStorage.setItem("is_superuser", JSON.stringify(response.data.is_superuser)); // Store as boolean
+                        localStorage.setItem("userID", String(response.data.pk)); // Store as string
+                        localStorage.setItem("validUserName", response.data.username);
+                    } else {
+                        console.error("Error: API did not return user data.");
+                    }
+
+                    // Force a full page reload only after localStorage is updated
+                    setTimeout(() => {
+                        window.location = "/";
+                    }, 500);
+                })
+                .catch(error => {
+                    console.error("User Fetch Error:", error);
+                    this.showMsg = "axiosError";
+                });
+        })
+        .catch(error => {
+            console.error("Login Error:", error);
+            if (error.message === "Network Error") {
+                this.showMsg = "axiosError";
+            } else if (error.response && error.response.status === 401) {
+                this.showMsg = "loginError";
+                router.push("/auth");
+            } else if (error.response && error.response.status === 400) {
+                this.showMsg = "loginError";
+            } else {
+                this.showMsg = "axiosError";
+                router.push("/auth");
             }
         });
-  
-        }
+}
       }
   }
   </script>
